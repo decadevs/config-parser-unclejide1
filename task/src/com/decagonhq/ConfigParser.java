@@ -40,40 +40,34 @@ public class ConfigParser {
 
     public void ReadWithInputStream() {
         String line;
-        // FileInputStream fin = null;
         FileReader fin = null;
         BufferedReader br = null;
-        InputStreamReader isr = null;
-        int b = 0;
-        boolean chec = true;
-
-
-
         try {
             fin = new FileReader(this.fileName);
             br = new BufferedReader(fin);
+            String prefix = "";
             while ((line = br.readLine()) != null) {
-//                line.replace("\n", "");
                 if (!line.isEmpty()) {
-                    if (line.equals("[application]")){
-                        chec = false;
+                    if (line.startsWith("[") && line.endsWith("]")) {
+                        prefix = line.substring(1, line.length() - 1);
+                        continue;
                     }
-                    if(chec) {
-                        String[] val = line.split("=");
-                        String key = val[0];
-                        String value = val[1];
-                        this.check.put(key, value);
+                    String[] keyValue = line.split("=");
+                    if(prefix.isEmpty()) {
+                        String key = keyValue[0];
+                        String value = keyValue[1];
+                        if(!this.check.containsKey(key)){
+                            this.check.put(key, value);
+                        }
+                    }else {
+                        String key = prefix + "."+ keyValue[0];
+                        String value = keyValue[1];
+                        if(!this.check.containsKey(key)){
+                            this.check.put(key, value);
+                        }
                     }
-                    if(!chec && b<3 && !line.equals("[application]")){
-                        String[] val = line.split("=");
-                        String key = "application." + val[0];
-                        String value = val[1];
-                        this.check.put(key, value);
-                        b++;
-                    }
-                    if(b == 3){
-                        chec =true;
-                    }
+                }else{
+                    prefix ="";
                 }
             }
         } catch (Exception e) {
@@ -86,7 +80,7 @@ public class ConfigParser {
                 System.err.println("Exception: " + e.getMessage());
             }
         }
-//        System.out.println(this.check);
+        System.out.println(this.check);
     }
 
     public static void main(String[] args) {
